@@ -4,6 +4,7 @@
   "description": "harjoitus osa3",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -11,5 +12,8 @@
     "url": "C:\\Users\\User\\Documents\\Full stack open osa3"
   },
   "author": "Otso Ahvonen",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
