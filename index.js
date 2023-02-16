@@ -1,6 +1,13 @@
 const http = require('http')
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
+
+const cors = require('cors')
+
+app.use(cors())
+
+app.use(morgan('tiny'));
 
 app.use(express.json())
 
@@ -72,6 +79,7 @@ app.delete('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
+  console.log("body post", body)
 
   if (!body.name) {
     return response.status(400).json({ 
