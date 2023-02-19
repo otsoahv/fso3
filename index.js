@@ -2,15 +2,14 @@ const http = require('http')
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
-
 const cors = require('cors')
+require('dotenv').config()
+
+const Person = require('./mongo/person')
 
 app.use(cors())
-
 app.use(morgan('tiny'));
-
 app.use(express.json())
-
 app.use(express.static('build'))
 
 
@@ -29,18 +28,6 @@ let persons = [
     "name": "Dan Abramov",
     "number": "12-43-234345",
     "id": 3
-  },
-  {
-    "name": "qwer",
-    "key": "qwer",
-    "number": "1234",
-    "id": 4
-  },
-  {
-    "name": "qwerr",
-    "key": "qwerr",
-    "number": "12345",
-    "id": 5
   }
 ]
 
@@ -52,10 +39,6 @@ app.get('/', (req, res) => {
   res.send('<h1>Hello World!</h1>')
 })
 
-app.get('/api/persons', (req, res) => {
-  res.json(persons)
-})
-
 app.get('/info', (req, res) => {
   const currentTime = new Date().toString();
   res.send(
@@ -63,25 +46,44 @@ app.get('/info', (req, res) => {
   )
 })
 
+//GET kaikkien yhteystietojen haku
+app.get('/api/persons', (req, res) => {
+  Person.find({}).then(persons => {
+    res.json(persons)
+  })
+})
+
+//GET yksittäinen yhteystieto
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
+  
+  Person.findById(request.params.id).then(note => {
+    response.json(note)
+  })
+  /*const id = Number(request.params.id)
   const note = persons.find(note => note.id === id)
   
   if (note) {
     response.json(note)
   } else {
     response.status(404).end()
-  }
+  }*/
 })
 
+//DELETE yhteystieto
 app.delete('/api/persons/:id', (request, response) => {
   console.log("deleting id:", request.params.id)
   const id = Number(request.params.id)
   persons = persons.filter(note => note.id !== id)
 
-  response.status(204).end()
+  Person.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+  
 })
 
+//POST uusi yhteystieto
 app.post('/api/persons', (request, response) => {
   const body = request.body
   console.log("body post", body)
@@ -98,22 +100,24 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
-  const duplicate = persons.find(person => person.name === body.name)
+  /* const duplicate = persons.find(person => person.name === body.name)
   if (duplicate) {
     return response.status(400).json({
       error: 'name must be unique'
     })
-  }
+  }*/
 
-  const person = {
+  const person = new Person( {
     name: body.name,
     number: body.number || false,
-    id: generateId(),
-  }
+    // id: generateId(),
+  })
 
-  persons = persons.concat(person)
-
-  response.json(person)
+  //  persons = persons.concat(person)
+ 
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 })
 
 const PORT = process.env.PORT || 3001
