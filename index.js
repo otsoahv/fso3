@@ -1,5 +1,5 @@
 require('dotenv').config()
-const http = require('http')
+//const http = require('http')
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
@@ -40,10 +40,6 @@ app.use(express.static('build'))
 
 let persons = []
 
-const generateId = () => {
-  return Math.floor(Math.random() * 10000)
-}
-
 app.get('/', (req, res) => {
   res.send('<h1>Hello World!</h1>')
 })
@@ -69,11 +65,11 @@ app.get('/api/persons', (req, res) => {
 
 //GET yksittäinen yhteystieto
 app.get('/api/persons/:id', (request, response, next) => {
-  
-  Person.findById(request.params.id).then(note => {
-    response.json(note)
-  })
-  .catch(error => next(error))
+  Person
+    .findById(request.params.id).then(note => {
+      response.json(note)
+    })
+    .catch(error => next(error))
 })
 
 //DELETE yhteystieto
@@ -83,11 +79,10 @@ app.delete('/api/persons/:id', (request, response, next) => {
   persons = persons.filter(note => note.id !== id)
 
   Person.findByIdAndRemove(request.params.id)
-    .then(result => {
+    .then(
       response.status(204).end()
-    })
+    )
     .catch(error => next(error))
-  
 })
 
 //POST uusi yhteystieto
@@ -96,26 +91,22 @@ app.post('/api/persons', (request, response, next) => {
   console.log("body post", body)
 
   if (!body.name) {
-    return response.status(400).json({ 
-      error: 'name missing' 
+    return response.status(400).json({
+      error: 'name missing'
     })
   }
 
   if (!body.number) {
-    return response.status(400).json({ 
-      error: 'number missing' 
+    return response.status(400).json({
+      error: 'number missing'
     })
   }
-
 
   const person = new Person( {
     name: body.name,
     number: body.number || false,
-   
   })
 
- 
- 
   person.save()
     .then(savedPerson => {
       response.json(savedPerson)
